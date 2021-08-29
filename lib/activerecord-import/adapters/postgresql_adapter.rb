@@ -137,7 +137,12 @@ module ActiveRecord::Import::PostgreSQLAdapter
       raise ArgumentError, 'Expected :conflict_target or :constraint_name to be specified'
     end
 
-    sql << "#{conflict_target}DO UPDATE SET "
+    if condition.present?
+      sql << "#{conflict_target} WHERE #{condition} DO UPDATE SET "
+    else
+      sql << "#{conflict_target}DO UPDATE SET "
+    end
+
     if columns.is_a?( Array )
       sql << sql_for_on_duplicate_key_update_as_array( table_name, locking_column, columns )
     elsif columns.is_a?( Hash )
@@ -147,8 +152,6 @@ module ActiveRecord::Import::PostgreSQLAdapter
     else
       raise ArgumentError, 'Expected :columns to be an Array or Hash'
     end
-
-    sql << " WHERE #{condition}" if condition.present?
 
     sql
   end
